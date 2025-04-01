@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Крестики-нолики</title>
+    <link rel="stylesheet" href="/CSS/style.css">
+</head>
+<body>
+    <div class="message" id="message"></div>
+    <div class="board" id="board"></div>
+    <button id="restart">Новая игра</button>
+    <script>
+        let current = 'X'
+        let gameActive = true
+        const cells = Array(9).fill('')
+        const wins = ['012','345','678','036','147','258','048','246']
+        
+        document.getElementById('board').innerHTML = 
+            cells.map((_, i) => 
+                `<div class="cell" data-index="${i}" onclick="handleClick(${i})"></div>`
+            ).join('')
+
+        function handleClick(i) {
+            if (!gameActive || cells[i] || current === 'O') return
+            
+            makeMove(i, 'X')
+            if (checkWin('X')) return endGame('Игрок X победил!')
+            if (cells.every(c => c)) return endGame('Ничья!')
+            
+            current = 'O'
+            setTimeout(computerMove, 500)
+        }
+
+        function computerMove() {
+            if (!gameActive) return
+            
+            const empty = cells
+                .map((c, i) => c ? -1 : i)
+                .filter(i => i >= 0)
+            
+            const move = empty[Math.floor(Math.random() * empty.length)]
+            makeMove(move, 'O')
+            
+            if (checkWin('O')) endGame('Компьютер победил!')
+            else if (cells.every(c => c)) endGame('Ничья!')
+            else current = 'X'
+        }
+
+        function makeMove(i, player) {
+            cells[i] = player
+            const cell = document.querySelector(`[data-index="${i}"]`)
+            cell.textContent = player
+            cell.style.cursor = 'default'
+        }
+
+        function checkWin(player) {
+            return wins.some(comb => 
+                comb.split('').every(i => cells[i] === player)
+            )
+        }
+
+        function endGame(msg) {
+            gameActive = false
+            document.getElementById('message').textContent = msg
+        }
+
+        document.getElementById('restart').onclick = () => {
+            cells.fill('')
+            current = 'X'
+            gameActive = true
+            document.querySelectorAll('.cell').forEach(cell => {
+                cell.textContent = ''
+                cell.style.cursor = 'pointer'
+            })
+            document.getElementById('message').textContent = ''
+        }
+    </script>
+</body>
+</html>
